@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Super Bear Block Craft - A Grande Jornada dos Ursos</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<!-- Three.js Engine -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+* {
+box-sizing: border-box;
+touch-action: manipulation;
+}
+body {
+font-family: 'Nunito', sans-serif;
+user-select: none;
+-webkit-user-select: none;
+overflow: hidden;
+background-color: #0d1117;
+margin: 0;
+padding: 0;
+width: 100vw;
+height: 100vh;
+}
+.font-game {
+font-family: 'Fredoka One', cursive;
+}
+canvas {
+display: block;
+width: 100%;
+height: 100%;
+outline: none;
+}
+.glass-card {
+background: rgba(15, 23, 42, 0.88);
+backdrop-filter: blur(10px);
+border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.purple-glow {
+box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+}
+.gold-glow {
+box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+}
+.block-selected {
+border: 3px solid #f59e0b !important;
+transform: scale(1.15);
+}
+@keyframes floatModal {
+0%, 100% { transform: translateY(0px) scale(1); }
+50% { transform: translateY(-8px) scale(1.02); }
+}
+.animate-float {
+animation: floatModal 3s ease-in-out infinite;
+}
+</style>
+</head>
+<body class="w-screen h-screen overflow-hidden text-white select-none">
+<!-- Notifications Toast Container -->
+<div id="toast-container" class="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-11/12 max-w-sm"></div>
+<!-- Phase Unlock Dialog Modal -->
+<div id="unlock-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden p-4">
+<div class="glass-card p-6 rounded-3xl max-w-sm w-full text-center border-2 border-yellow-400 gold-glow animate-float flex flex-col items-center">
+<div id="modal-icon" class="text-5xl mb-2">🏔️</div>
+<h2 id="modal-title" class="text-2xl font-game text-yellow-300 mb-2 leading-tight">FASE DESBLOQUEADA!</h2>
+<p id="modal-desc" class="text-xs text-purple-200 mb-4">Você resgatou os 5 ursos! O portal para a próxima aventura está aberto!</p>
+<button id="btn-modal-close" class="bg-gradient-to-r from-yellow-500 to-amber-600 text-slate-950 font-game px-6 py-2.5 rounded-2xl shadow-lg active:scale-95 transition text-sm">
+🚀 IR PARA A NOVA FASE!
+</button>
+</div>
+</div>
+<!-- LOBBY & CHARACTER CREATOR -->
+<div id="lobby-screen" class="absolute inset-0 z-40 flex flex-col justify-between p-4 bg-gradient-to-b from-purple-950 via-indigo-900 to-slate-900 overflow-y-auto">
+<!-- Header -->
+<div class="text-center mt-2 animate-pulse">
+<h1 class="text-3xl sm:text-4xl font-game text-yellow-300 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] leading-tight">
+SUPER BEAR <span class="text-purple-400">BLOCK CRAFT</span>
+</h1>
+<p class="text-xs sm:text-sm text-purple-200 font-bold bg-purple-900/60 px-3 py-1 rounded-full inline-block mt-1 border border-purple-400/40">
+🗺️ A Grande Jornada dos 4 Biomas 🐻
+</p>
+</div>
+<!-- Vertical Container for Character & Rooms -->
+<div class="w-full max-w-md mx-auto space-y-4 my-2">
+<!-- Character Customizer Card -->
+<div class="glass-card p-4 rounded-3xl shadow-xl flex flex-col items-center border-purple-500/40">
+<h2 class="text-lg font-game text-yellow-400 mb-2 flex items-center gap-2">
+<i class="fa-solid fa-paw"></i> SEU URSO PERSONALIZADO
+</h2>
+<!-- Player Name -->
+<div class="w-full mb-3">
+<input type="text" id="player-name" maxlength="12" value="UrsoHeroi" 
+class="w-full bg-slate-900/90 border-2 border-purple-500/60 rounded-xl px-3 py-1.5 text-yellow-300 font-bold text-center text-sm focus:outline-none focus:border-yellow-400">
+</div>
+<!-- Color Options -->
+<div class="w-full space-y-2 text-xs">
+<div>
+<span class="text-gray-300 font-bold block text-center mb-1">Cor do Pêlo:</span>
+<div class="flex justify-center gap-2" id="color-options">
+<button data-color="#8B4513" class="w-7 h-7 rounded-full bg-[#8B4513] border-2 border-white ring-2 ring-yellow-400 color-btn"></button>
+<button data-color="#9333ea" class="w-7 h-7 rounded-full bg-[#9333ea] border-2 border-white color-btn"></button>
+<button data-color="#D2691E" class="w-7 h-7 rounded-full bg-[#D2691E] border-2 border-white color-btn"></button>
+<button data-color="#1e293b" class="w-7 h-7 rounded-full bg-[#1e293b] border-2 border-white color-btn"></button>
+<button data-color="#f43f5e" class="w-7 h-7 rounded-full bg-[#f43f5e] border-2 border-white color-btn"></button>
+</div>
+</div>
+<!-- Hat Options -->
+<div>
+<span class="text-gray-300 font-bold block text-center mb-1">Chapéu:</span>
+<div class="grid grid-cols-4 gap-1.5 text-[11px]" id="hat-options">
+<button data-hat="none" class="bg-slate-800 hover:bg-slate-700 py-1 rounded-lg font-bold border border-yellow-400 hat-btn">Nenhum</button>
+<button data-hat="crown" class="bg-slate-800 hover:bg-slate-700 py-1 rounded-lg font-bold border border-white/20 hat-btn">👑 Coroa</button>
+<button data-hat="tophat" class="bg-slate-800 hover:bg-slate-700 py-1 rounded-lg font-bold border border-white/20 hat-btn">🎩 Cartola</button>
+<button data-hat="cap" class="bg-slate-800 hover:bg-slate-700 py-1 rounded-lg font-bold border border-white/20 hat-btn">🧢 Boné</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Multiplayer & Play Buttons Card -->
+<div class="glass-card p-4 rounded-3xl shadow-xl flex flex-col gap-2.5 border-indigo-500/40">
+<h2 class="text-lg font-game text-purple-300 text-center flex items-center justify-center gap-2">
+<i class="fa-solid fa-users"></i> SALAS ONLINE (10 URSOS)
+</h2>
+<button id="btn-create-room" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-game py-2.5 rounded-2xl shadow-lg transform active:scale-95 transition text-base flex items-center justify-center gap-2 purple-glow">
+<i class="fa-solid fa-plus"></i> CRIAR NOVA SALA
+</button>
+<div class="flex gap-2">
+<input type="text" id="room-code-input" placeholder="CÓDIGO SALA" 
+class="w-1/2 bg-slate-900 border-2 border-indigo-500/50 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-indigo-200 uppercase text-xs focus:outline-none">
+<button id="btn-join-room" class="w-1/2 bg-indigo-700 hover:bg-indigo-600 text-white font-game py-1.5 rounded-xl shadow transform active:scale-95 transition text-xs flex items-center justify-center gap-1">
+<i class="fa-solid fa-sign-in-alt"></i> ENTRAR
+</button>
+</div>
+<!-- Offline Solo Mode Button -->
+<button id="btn-play-offline" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-game py-2.5 rounded-2xl shadow-lg transform active:scale-95 transition text-sm flex items-center justify-center gap-2 mt-1">
+<i class="fa-solid fa-gamepad"></i> JOGAR MODO SOLO (OFFLINE)
+</button>
+</div>
+</div>
+<!-- Quest Objective Instructions -->
+<div class="text-center text-[11px] text-purple-200 bg-black/50 p-2.5 rounded-2xl border border-purple-500/30 max-w-md mx-auto w-full space-y-1">
+<p><b>🎯 A JORNADA COMPLETA DOS URSOS:</b></p>
+<p>1️⃣ <b>Vila & Tartarugas:</b> Salve 5 Ursos (5º = 80 Moedas) ➔ Liberte o <b>Vale Nevado</b>!</p>
+<p>2️⃣ <b>Vale Nevado:</b> Salve 5 Ursos no Frio ➔ Liberte o <b>Deserto</b>!</p>
+<p>3️⃣ <b>Deserto:</b> Salve 5 Ursos na Areia ➔ Liberte o caminho para <b>A Casa</b>!</p>
+<p>4️⃣ <b>A Casa:</b> Salve o Urso Lendário Final que custa <b>100 Moedas</b>!</p>
+</div>
+</div>
+<!-- IN-GAME HUD -->
+<div id="game-hud" class="absolute inset-0 z-30 pointer-events-none hidden flex flex-col justify-between p-3">
+<!-- Top Status Bar (Coins, Saved Bears, Phase Indicator, Room Code) -->
+<div class="flex flex-col gap-2 pointer-events-auto">
+<div class="flex justify-between items-center">
+<!-- Mel Roxo & Saved Bears counter -->
+<div class="glass-card px-3 py-1.5 rounded-2xl flex items-center gap-3 border-purple-500/50 purple-glow">
+<!-- Coins -->
+<div class="flex items-center gap-1.5">
+<span class="text-lg">🍯</span>
+<div>
+<div class="text-[9px] text-purple-300 font-bold uppercase leading-none">Mel Roxo</div>
+<div id="hud-coin-count" class="text-base font-game text-yellow-300 leading-none">0</div>
+</div>
+</div>
+<div class="h-6 w-[1px] bg-white/20"></div>
+<!-- Saved Bears in Current Phase & Total -->
+<div class="flex items-center gap-1.5">
+<span class="text-lg">🐻</span>
+<div>
+<div class="text-[9px] text-purple-300 font-bold uppercase leading-none">Ursos Salvos</div>
+<div id="hud-bear-count" class="text-base font-game text-emerald-400 leading-none">0 / 5</div>
+</div>
+</div>
+</div>
+<!-- Online Badge & Exit Button -->
+<div class="flex items-center gap-1.5">
+<div class="glass-card px-2.5 py-1.5 rounded-2xl flex items-center gap-1 text-xs font-bold text-indigo-300">
+<i class="fa-solid fa-wifi text-[10px]"></i>
+<span id="hud-room-code" class="font-mono text-[11px]">SOLO</span>
+</div>
+<button id="btn-leave-game" class="glass-card p-2 rounded-2xl text-red-400 hover:bg-red-500/20 font-bold flex items-center justify-center transform active:scale-95 transition text-xs">
+<i class="fa-solid fa-door-open"></i>
+</button>
+</div>
+</div>
+<!-- Current Biome/Phase Banner -->
+<div class="self-center glass-card px-3 py-1 rounded-full border-yellow-400/60 text-center">
+<span id="hud-phase-name" class="text-xs font-game text-yellow-300 tracking-wide">
+🐢 FASE 1: VILA & ALDEIA DAS TARTARUGAS
+</span>
+</div>
+</div>
+<!-- Middle Action Floating Prompt (For Rescuing Bears / Portals) -->
+<div id="interact-prompt" class="pointer-events-auto self-center glass-card px-4 py-2.5 rounded-2xl border-yellow-400 text-center hidden transform transition animate-bounce max-w-xs">
+<div id="prompt-text" class="text-xs font-bold text-yellow-300 mb-1">🐻 Gaiola do Urso Enjaulado!</div>
+<button id="btn-rescue-action" class="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-950 font-game px-4 py-1 rounded-xl text-xs shadow-lg uppercase">
+🔓 AÇÃO
+</button>
+</div>
+<!-- Chat Overlay -->
+<div id="chat-overlay" class="pointer-events-auto w-64 glass-card rounded-2xl p-2 flex flex-col gap-1 max-h-32 border-white/10 my-auto hidden">
+<div id="chat-messages" class="flex-1 overflow-y-auto space-y-1 text-[11px] text-gray-200 pr-1 max-h-20">
+<div class="text-purple-300 italic">Bem-vindo à Grande Aventura dos Ursos!</div>
+</div>
+<div class="flex gap-1">
+<input type="text" id="chat-input" placeholder="Conversar..." maxlength="40"
+class="w-full bg-black/60 border border-white/20 rounded-lg px-2 py-0.5 text-[11px] text-white focus:outline-none">
+<button id="btn-chat-send" class="bg-purple-600 px-2 py-0.5 rounded-lg text-[11px] font-bold">
+<i class="fa-solid fa-paper-plane"></i>
+</button>
+</div>
+</div>
+<!-- Bottom Controls Bar (Minecraft Voxel Hotbar & Vertical Touch Joystick) -->
+<div class="flex flex-col items-center gap-2 w-full pointer-events-auto">
+<!-- Voxel Hotbar -->
+<div class="glass-card px-2 py-1.5 rounded-2xl flex items-center gap-1.5 border-purple-500/40 overflow-x-auto max-w-full">
+<button data-block="grass" class="w-9 h-9 shrink-0 rounded-xl bg-emerald-600 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot block-selected">🌱</button>
+<button data-block="purple_honey" class="w-9 h-9 shrink-0 rounded-xl bg-purple-600 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">🍯</button>
+<button data-block="snow" class="w-9 h-9 shrink-0 rounded-xl bg-slate-200 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">❄️</button>
+<button data-block="ice" class="w-9 h-9 shrink-0 rounded-xl bg-sky-300 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">🧊</button>
+<button data-block="sand" class="w-9 h-9 shrink-0 rounded-xl bg-yellow-400 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">⏳</button>
+<button data-block="wood" class="w-9 h-9 shrink-0 rounded-xl bg-amber-800 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">🪵</button>
+<button data-block="brick" class="w-9 h-9 shrink-0 rounded-xl bg-red-700 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">🧱</button>
+<button data-block="gold" class="w-9 h-9 shrink-0 rounded-xl bg-amber-300 border-2 border-white/30 flex items-center justify-center font-bold text-xs hotbar-slot">⭐</button>
+</div>
+<!-- Touch Controls Row (Designed for Vertical Mobile Play) -->
+<div class="w-full flex justify-between items-end px-2 pb-1">
+<!-- Touch Joystick Area -->
+<div id="joystick-zone" class="w-24 h-24 bg-purple-950/60 rounded-full border-2 border-purple-400/50 relative flex items-center justify-center touch-none shadow-xl">
+<div id="joystick-knob" class="w-10 h-10 bg-yellow-400/90 rounded-full absolute pointer-events-none shadow-md"></div>
+</div>
+<!-- Action Buttons Group (Break, Place, Jump) -->
+<div class="flex gap-1.5 items-end">
+<button id="btn-touch-break" class="w-12 h-12 rounded-2xl bg-red-600/90 active:bg-red-500 border-2 border-white/40 text-white font-black text-[10px] flex flex-col items-center justify-center shadow-lg">
+<i class="fa-solid fa-hammer text-xs"></i> QUEBRAR
+</button>
+<button id="btn-touch-place" class="w-12 h-12 rounded-2xl bg-emerald-600/90 active:bg-emerald-500 border-2 border-white/40 text-white font-black text-[10px] flex flex-col items-center justify-center shadow-lg">
+<i class="fa-solid fa-cube text-xs"></i> COLOCAR
+</button>
+<button id="btn-touch-jump" class="w-14 h-14 rounded-full bg-yellow-500 active:bg-yellow-400 border-2 border-white/70 text-slate-950 font-black text-xs flex flex-col items-center justify-center shadow-2xl">
+<i class="fa-solid fa-arrow-up text-sm"></i> PULAR
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 3D CANVAS CONTAINER -->
+<div id="canvas-container" class="absolute inset-0 z-10 w-full h-full bg-slate-900"></div>
+<script src="js/game.js"></script>
+</body>
+</html>
