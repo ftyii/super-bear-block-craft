@@ -1,0 +1,31 @@
+{
+  "name": "super-bear-block-craft",
+  "version": "1.0.0",
+  "description": "🐻 A Grande Jornada dos Ursos - Jogo 3D multiplayer de block building com Three.js",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build needed for static site'",
+    "start": "python -m http.server 3000"
+  },
+  "keywords": [
+    "game",
+    "3d",
+    "blocks",
+    "multiplayer",
+    "three.js",
+    "bear",
+    "urso",
+    "jogo"
+  ],
+  "author": "ftyii",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ftyii/super-bear-block-craft.git"
+  },
+  "dependencies": {
+    "three": "^r128"
+  },
+  "devDependencies": {}
+}
